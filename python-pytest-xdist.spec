@@ -1,7 +1,7 @@
 #
 # Conditional build:
 %bcond_without	python2		# CPython 2.x module
-%bcond_without	python3		# CPython 3.x module
+%bcond_with	python3		# CPython 3.x module (built from python3-pytest-xdist.spec)
 %bcond_with	tests		# tests [sensitive to pytest warnings or other output changes, ptys needed]
 
 Summary:	py.test distributed testing plugin
@@ -9,7 +9,7 @@ Summary(pl.UTF-8):	Wtyczka py.test do testów rozproszonych
 Name:		python-pytest-xdist
 # keep 1.x here for python2 support
 Version:	1.34.0
-Release:	5
+Release:	6
 License:	MIT
 Group:		Libraries/Python
 #Source0Download: https://pypi.org/simple/pytest-xdist/
@@ -27,7 +27,6 @@ BuildRequires:	python-py >= 1.4.22
 BuildRequires:	python-pytest >= 4.4.0
 BuildRequires:	python-pytest-forked
 BuildRequires:	python-six
-BuildConflicts:	python-pytest-capturelog
 %endif
 %endif
 %if %{with python3}
@@ -41,7 +40,6 @@ BuildRequires:	python3-py >= 1.4.22
 BuildRequires:	python3-pytest >= 4.4.0
 BuildRequires:	python3-pytest-forked
 BuildRequires:	python3-six
-BuildConflicts:	python-pytest-capturelog
 %endif
 %endif
 BuildRequires:	rpm-pythonprov
@@ -80,9 +78,10 @@ trybów wykonywania testów, jak choćby zrównoleglenie.
 %py_build
 
 %if %{with tests}
-# -p no:benchmark to avoid "PytestBenchmarkWarning: Benchmarks are automatically disabled because xdist plugin is active.Benchmarks"
+PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 \
+PYTEST_PLUGINS=xdist.plugin,xdist.looponfail \
 PYTHONPATH=$(pwd) \
-%{__python} -m pytest -p no:benchmark testing
+%{__python} -m pytest testing
 %endif
 %endif
 
@@ -90,8 +89,10 @@ PYTHONPATH=$(pwd) \
 %py3_build
 
 %if %{with tests}
+PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 \
+PYTEST_PLUGINS=xdist.plugin,xdist.looponfail \
 PYTHONPATH=$(pwd) \
-%{__python3} -m pytest -p no:benchmark testing
+%{__python3} -m pytest testing
 %endif
 %endif
 
